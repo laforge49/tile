@@ -73,11 +73,9 @@
            {:status 200 :session (assoc session :uid user-id)}))
 
 (defroutes ring-routes
-           #_(GET "/" ring-req (landing-pg-handler ring-req))
            (GET "/" ring-req (response/content-type (response/resource-response "index.html") "text/html"))
            (GET "/chsk" ring-req (ring-ajax-get-or-ws-handshake ring-req))
            (POST "/chsk" ring-req (ring-ajax-post ring-req))
-           (POST "/login" ring-req (login-handler ring-req))
            (route/resources "/")                            ; Static files, notably public/main.js (our cljs target)
            (route/not-found "<h1>Page not found</h1>"))
 
@@ -98,31 +96,6 @@
       (doseq [uid (:any @connected-uids)]
              (doseq [i (range 100)]
                     (chsk-send! uid [:fast-push/is-fast (str "hello " i "!!")]))))
-
-(comment (test-fast-server>user-pushes))
-
-(defonce broadcast-enabled?_ (atom true))
-
-(defn start-example-broadcaster!
-      "As an example of server>user async pushes, setup a loop to broadcast an
-      event to all connected users every 10 seconds"
-      []
-      (let [broadcast!
-            (fn [i]
-                (let [uids (:any @connected-uids)]
-                     (debugf "Broadcasting server>user: %s uids" (count uids))
-                     (doseq [uid uids]
-                            (chsk-send! uid
-                                        [:some/broadcast
-                                         {:what-is-this "An async broadcast pushed from server"
-                                          :how-often "Every 10 seconds"
-                                          :to-whom uid
-                                          :i i}]))))]
-
-           (go-loop [i 0]
-                    (<! (async/timeout 10000))
-                    (when @broadcast-enabled?_ (broadcast! i))
-                    (recur (inc i)))))
 
 ;;;; Sente event handlers
 
@@ -150,10 +123,6 @@
 (defmethod -event-msg-handler :example/test-rapid-push
            [ev-msg] (test-fast-server>user-pushes))
 
-(defmethod -event-msg-handler :example/toggle-broadcast
-           [{:as ev-msg :keys [?reply-fn]}]
-           (let [loop-enabled? (swap! broadcast-enabled?_ not)]
-                (?reply-fn loop-enabled?)))
 
 ;; TODO Add your (defmethod -event-msg-handler <event-id> [ev-msg] <body>)s here...
 
@@ -188,4 +157,4 @@
            (reset! web-server_ stop-fn)))
 
 (defn stop! [] (stop-router!) (stop-web-server!))
-(defn start! [] (start-router!) (start-web-server!) (start-example-broadcaster!))
+(defn start! [] (start-router!) (start-web-server!))

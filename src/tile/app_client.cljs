@@ -1,5 +1,5 @@
 (ns tile.app-client
-  (:require [tile.client :as client :refer [->output! chsk-send! chsk chsk-state]]
+  (:require [tile.sente-client :as client :refer [->output! chsk-send! chsk chsk-state]]
             [clojure.string :as str]
             [reagent.core :as reagent :refer [atom]]
             [taoensso.sente :as sente :refer (cb-success?)]))

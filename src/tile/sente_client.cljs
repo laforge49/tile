@@ -1,4 +1,4 @@
-(ns tile.client
+(ns tile.sente-client
   "Official Sente reference example: client"
   {:author "Peter Taoussanis (@ptaoussanis)"}
 
