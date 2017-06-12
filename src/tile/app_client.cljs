@@ -26,18 +26,7 @@
                  :value "Test rapid server>user async pushes"
                  :on-click (fn []
                                (->output! "Button 3 was clicked (will ask server to test rapid async push)")
-                               (chsk-send! [:example/test-rapid-push]))}]
-        [:input {:type "button"
-                 :value "Toggle server>user async broadcast push loop"
-                 :on-click (fn []
-                               (->output! "Button 4 was clicked (will toggle async broadcast loop)")
-                               (chsk-send! [:example/toggle-broadcast] 5000
-                                           (fn [cb-reply]
-                                               (when (cb-success? cb-reply)
-                                                     (let [loop-enabled? cb-reply]
-                                                          (if loop-enabled?
-                                                            (->output! "Async broadcast loop now enabled")
-                                                            (->output! "Async broadcast loop now disabled")))))))}]]
+                               (chsk-send! [:example/test-rapid-push]))}]]
        [:p
         [:input {:type "button"
                  :value "Disconnect"
@@ -52,50 +41,8 @@
 
        ])
 
-(defn calling-component2
-      []
-      [:div
-       [:hr]
-       [:h2 "Step 3: try login with a user-id"]
-       [:p "The server can use this id to send events to *you* specifically."]
-       [:p
-        [:input {:id "input-login"
-                 :type :text
-                 :placeholder "User-id"}]
-        [:input {:type "button"
-                 :value "Secure login!"
-                 :on-click (fn []
-                               (let [user-id (.-value (.getElementById js/document "input-login"))]
-                                    (if (str/blank? user-id)
-                                      (js/alert "Please enter a user-id first")
-                                      (do
-                                        (->output! "Logging in with user-id %s" user-id)
-
-                                        ;;; Use any login procedure you'd like. Here we'll trigger an Ajax
-                                        ;;; POST request that resets our server-side session. Then we ask
-                                        ;;; our channel socket to reconnect, thereby picking up the new
-                                        ;;; session.
-
-                                        (sente/ajax-lite "/login"
-                                                         {:method :post
-                                                          :headers {:X-CSRF-Token (:csrf-token @chsk-state)}
-                                                          :params {:user-id (str user-id)}}
-
-                                                         (fn [ajax-resp]
-                                                             (->output! "Ajax login response: %s" ajax-resp)
-                                                             (let [login-successful? true ; Your logic here
-                                                                   ]
-                                                                  (if-not login-successful?
-                                                                          (->output! "Login failed")
-                                                                          (do
-                                                                            (->output! "Login successful")
-                                                                            (sente/chsk-reconnect! chsk))))))))))}]]
-       ])
-
 (defn start!
       []
       (client/start!)
       (reagent/render-component [calling-component]
-                                (.getElementById js/document "container"))
-      (reagent/render-component [calling-component2]
-                                (.getElementById js/document "container2")))
+                                (.getElementById js/document "container")))
