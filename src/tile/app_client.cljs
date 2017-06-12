@@ -47,10 +47,15 @@
                               :title title
                               :content (fn [state]
                                            (reduce
-                                             (fn [v state]
-                                                 (let [d @state
-                                                       t (:title d)]
+                                             (fn [v s]
+                                                 (let [d @s
+                                                       t (:title d)
+                                                       checked (:display d)]
                                                       (conj v [:div
+                                                               [:input {:type      "checkbox"
+                                                                        :checked   (true? checked)
+                                                                        :on-change (fn []
+                                                                                       (swap! s (fn [d] (assoc d :display (not (true? checked))))))}]
                                                                t])))
                                              [:dev]
                                              (:child-tile-states @state)))})]
