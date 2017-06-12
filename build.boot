@@ -29,11 +29,11 @@
 (require
  '[adzerk.boot-cljs      :refer [cljs]]
  '[adzerk.boot-reload    :refer [reload]]
- 'example.server)
+ 'tile.server)
 
 (deftask run []
   (with-pass-thru _
-    (example.server/-main)))
+    (tile.server/-main)))
 
 (deftask dev
   "Run a restartable system in the Repl"
