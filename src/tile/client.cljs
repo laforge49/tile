@@ -15,18 +15,12 @@
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
 
-;; (timbre/set-level! :trace) ; Uncomment for more logging
+;(timbre/set-level! :debug)
 
-;;;; Util for logging output to on-screen console
-
-(def output-el (.getElementById js/document "output"))
 (defn ->output! [fmt & args]
-      (let [output-el (.getElementById js/document "output")]
-           (if (some? output-el)
-             (let [msg (apply encore/format fmt args)]
-                  (timbre/debug msg)
-                  (aset output-el "value" (str "• " (.-value output-el) "\n" msg))
-                  (aset output-el "scrollTop" (.-scrollHeight output-el))))))
+      (let [msg (apply encore/format fmt args)]
+           (timbre/debug msg)
+           (.log js/console msg)))
 
 (->output! "ClojureScript appears to have loaded correctly.")
 
