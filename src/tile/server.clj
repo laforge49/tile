@@ -206,10 +206,3 @@
 
 (defn stop! [] (stop-router!) (stop-web-server!))
 (defn start! [] (start-router!) (start-web-server!) (start-example-broadcaster!))
-
-(defn -main "For `lein run`, etc." []
-      (start!))
-
-(comment
-  (start!)
-  (test-fast-server>user-pushes))

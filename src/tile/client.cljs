@@ -155,7 +155,7 @@
        [:h2 "Step 3: try login with a user-id"]
        [:p "The server can use this id to send events to *you* specifically."]
        [:p
-        [:input {:id input-login
+        [:input {:id "input-login"
                  :type :text
                  :placeholder "User-id"}]
         [:input {:type "button"
