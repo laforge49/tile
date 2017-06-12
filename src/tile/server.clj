@@ -31,7 +31,7 @@
       [taoensso.sente.packers.transit :as sente-transit]))
 
 ;; (timbre/set-level! :trace) ; Uncomment for more logging
-(reset! sente/debug-mode?_ true)                            ; Uncomment for extra debug info
+(reset! sente/debug-mode?_ false)                            ; Uncomment for extra debug info
 
 ;;;; Define our Sente channel socket (chsk) server
 
@@ -173,34 +173,17 @@
 (defn stop-web-server! [] (when-let [stop-fn @web-server_] (stop-fn)))
 (defn start-web-server! [& [port]]
       (stop-web-server!)
-      (let [port (or port 0)                                ; 0 => Choose any available port
+      (let [port (or port 3000)                                ; 0 => Choose any available port
             ring-handler (var main-ring-handler)
 
             [port stop-fn]
             ;;; TODO Choose (uncomment) a supported web server ------------------
             (let [stop-fn (http-kit/run-server ring-handler {:port port})]
                  [(:local-port (meta stop-fn)) (fn [] (stop-fn :timeout 100))])
-            ;;
-            ;; (let [server (immutant/run ring-handler :port port)]
-            ;;   [(:port server) (fn [] (immutant/stop server))])
-            ;;
-            ;; (let [port (nginx-clojure/run-server ring-handler {:port port})]
-            ;;   [port (fn [] (nginx-clojure/stop-server))])
-            ;;
-            ;; (let [server (aleph/start-server ring-handler {:port port})
-            ;;       p (promise)]
-            ;;   (future @p) ; Workaround for Ref. https://goo.gl/kLvced
-            ;;   ;; (aleph.netty/wait-for-close server)
-            ;;   [(aleph.netty/port server)
-            ;;    (fn [] (.close ^java.io.Closeable server) (deliver p nil))])
-            ;; ------------------------------------------------------------------
 
             uri (format "http://localhost:%s/" port)]
 
            (infof "Web server is running at `%s`" uri)
-           (try
-             (.browse (java.awt.Desktop/getDesktop) (java.net.URI. uri))
-             (catch java.awt.HeadlessException _))
 
            (reset! web-server_ stop-fn)))
 

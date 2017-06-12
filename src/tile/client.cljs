@@ -202,4 +202,4 @@
                                 (.getElementById js/document "container2"))
       )
 
-#_(defonce _start-once (start!))
+(defonce _start-once (start!))

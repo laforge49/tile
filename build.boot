@@ -43,4 +43,5 @@
    (cljs :source-map true
          :optimizations :none)
    (reload)
+   (speak)
    (run)))
