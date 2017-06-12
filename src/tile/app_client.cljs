@@ -46,7 +46,14 @@
       (let [tile-state (atom {:child-tile-states []
                               :title title
                               :content (fn [state]
-                                           [:dev (count (:child-tile-states @state))])})]
+                                           (reduce
+                                             (fn [v state]
+                                                 (let [d @state
+                                                       t (:title d)]
+                                                      (conj v [:div
+                                                               t])))
+                                             [:dev]
+                                             (:child-tile-states @state)))})]
            tile-state))
 
 (defn add-child-tile
@@ -67,8 +74,14 @@
                                 :on-click (fn []
                                               (->output! "Button 2 was clicked (will receive reply from server)")
                                               (chsk-send! [:example/button2 {:had-a-callback? "indeed"}] 5000
-                                                          (fn [cb-reply] (->output! "Callback reply: %s" cb-reply))))}]]))]
+                                                          (fn [cb-reply] (->output! "Callback reply: %s" cb-reply))))}]]))
+             b2 (basic-tile-state
+                  "Test2"
+                  (fn [state]
+                      [:div 222]))
+             ]
             (add-child-tile l1 b1)
+            (add-child-tile l1 b2)
             (reset! top-tile-atom l1)
             (swap! l1 (fn [d] (assoc d :display true)))
             [tile l1])])
