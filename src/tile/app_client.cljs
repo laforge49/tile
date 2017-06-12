@@ -7,9 +7,7 @@
 (defn calling-component
       []
       [:div
-       [:h1 "Sente reference example"]
-       [:p "An Ajax/WebSocket" [:strong " (random choice!)"] " has been configured for this example"]
-       [:hr]
+       [:h1 "Tile example"]
        [:p [:strong "Step 1: "] " try hitting the buttons:"]
        [:p
         [:input {:type "button"
@@ -92,9 +90,6 @@
                                                                           (do
                                                                             (->output! "Login successful")
                                                                             (sente/chsk-reconnect! chsk))))))))))}]]
-       [:hr]
-       [:h2 "Step 4: want to re-randomize Ajax/WebSocket connection type?"]
-       [:p "Hit your browser's reload/refresh button"]
        ])
 
 (defn start!

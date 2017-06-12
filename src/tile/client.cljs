@@ -33,17 +33,15 @@
 ;;;; Define our Sente channel socket (chsk) client
 
 (let [;; For this example, select a random protocol:
-      rand-chsk-type (if (>= (rand) 0.5) :ajax :auto)
-      _ (->output! "Randomly selected chsk type: %s" rand-chsk-type)
-
       ;; Serializtion format, must use same val for client + server:
-      packer :edn                                           ; Default packer, a good choice in most cases
+      packer
+      :edn                                           ; Default packer, a good choice in most cases
       ;; (sente-transit/get-transit-packer) ; Needs Transit dep
 
       {:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket-client!
         "/chsk"                                             ; Must match server Ring routing URL
-        {:type rand-chsk-type
+        {:type :auto
          :packer packer})]
 
      (def chsk chsk)
