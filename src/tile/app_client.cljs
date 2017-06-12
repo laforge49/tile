@@ -7,7 +7,7 @@
 (defn tile
       [state]
       (fn [state]
-          (let [{:keys [display title content]} @state]
+          (let [{:keys [parent-tile-state display title content]} @state]
                (if (not display)
                  nil
                  [:table
@@ -32,25 +32,27 @@
                        (content)
                        nil)]]]]))))
 
-(defn basic-tile
-      [title content]
-      [tile (atom {:display true
-                   :title title
-                   :content content})])
+(defn basic-tile-state
+      [parent-tile-state title content]
+      (atom {:parent-tile-state parent-tile-state
+             :display true
+             :title title
+             :content content}))
 
 (defn calling-component
       []
       [:div
-       [basic-tile
-        "Basic tile example"
-        (fn []
-            [:div
-             [:input {:type "button"
-                      :value "chsk-send! (with reply)"
-                      :on-click (fn []
-                                    (->output! "Button 2 was clicked (will receive reply from server)")
-                                    (chsk-send! [:example/button2 {:had-a-callback? "indeed"}] 5000
-                                                (fn [cb-reply] (->output! "Callback reply: %s" cb-reply))))}]])]])
+       [tile (basic-tile-state
+               nil
+               "Basic tile example"
+               (fn []
+                   [:div
+                    [:input {:type "button"
+                             :value "chsk-send! (with reply)"
+                             :on-click (fn []
+                                           (->output! "Button 2 was clicked (will receive reply from server)")
+                                           (chsk-send! [:example/button2 {:had-a-callback? "indeed"}] 5000
+                                                       (fn [cb-reply] (->output! "Callback reply: %s" cb-reply))))}]]))]])
 
 (defn start!
       []
