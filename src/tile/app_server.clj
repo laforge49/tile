@@ -1,5 +1,5 @@
 (ns tile.app-server
-    (:require [tile.server :as server]))
+    (:require [tile.sente-server :as server]))
 
 
 (defn -main "For `lein run`, etc." []
