@@ -4,7 +4,8 @@
             [reagent.core :as reagent :refer [atom]]
             [taoensso.sente :as sente :refer (cb-success?)]))
 
-(def top-tile-atom (atom nil))
+(def top-tile-state-atom (atom nil))
+(def all-tile-states-atom (atom []))
 
 (defn tile
       [state]
@@ -38,15 +39,17 @@
 
 (defn basic-tile-state
       [title content]
-      (let [tile-state (atom {:child-tile-states []
+      (let [tile-state-atom (atom {:child-tile-states []
                               :title title
                               :content content
-                              :display false})]
-           tile-state))
+                              :display false})
+            tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
+        (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+        tile-state-atom))
 
 (defn list-tile-state
       [title]
-      (let [tile-state (atom
+      (let [tile-state-atom (atom
                          {:child-tile-states []
                           :title title
                           :content (fn [state]
@@ -65,8 +68,10 @@
                                                            t])))
                                          [:dev]
                                          (:child-tile-states @state)))
-                          :display false})]
-           tile-state))
+                          :display false})
+            tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
+        (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+        tile-state-atom))
 
 (defn add-child-tile
       [parent-tile-state child-tile-state]
@@ -120,7 +125,7 @@
             ]
            (add-child-tile l1 b1)
            (add-child-tile l1 b2)
-           (reset! top-tile-atom l1)
+           (reset! top-tile-state-atom l1)
            (swap! l1 (fn [d] (assoc d :display true)))
            (display-tiles l1)))
 
