@@ -75,7 +75,6 @@
 
 (defn add-child-tile
       [parent-tile-state child-tile-state]
-      (swap! child-tile-state (fn [d] (assoc d :parent-tile-state parent-tile-state)))
       (swap! parent-tile-state (fn [d] (assoc d :child-tile-states (conj (:child-tile-states d) child-tile-state)))))
 
 (defn tile-states
