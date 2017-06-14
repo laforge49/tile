@@ -9,25 +9,26 @@
 
 (defn tile
   [state]
-  (let [{:keys [parent-tile-state child-tile-ndxes display title content]} @state]
-    #_(.log js/console (pr-str :tile (count child-tile-ndxes) display title))
+  (let [{:keys [parent-tile-state child-tile-ndxes display title content tile-ndx]} @state]
     (if (not display)
       nil
       [:table
-       {:style {:float "left"}}
+       {:style {:border "5px solid red" :float "left"}}
        [:tbody
-        {:style {:border "5px solid red" :float "left"}}
         [:tr
          {:style {:background-color "yellow"}}
          [:td
-          {:style {:padding "5px"}}
           [:div
            [:div
             {:style {:float "left"}}
-            [:strong (str title " ")]]
+            [:strong
+             {:style {:padding "5px"}}
+             (str title " ")]]
            [:div
             {:style {:float "right"}}
-            " X"]]]]
+            [:input {:disabled (= tile-ndx 0)
+                     :type "button"
+                     :value "X"}]]]]]
         [:tr
          {:style {:background-color "Cornsilk"}}
          [:td
