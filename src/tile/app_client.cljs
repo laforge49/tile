@@ -11,8 +11,8 @@
   [state]
   (let [{:keys [parent-tile-state child-tile-ndxes display title content]} @state]
     (.log js/console (pr-str (count child-tile-ndxes) display title))
-    (if (not display)
-      nil
+   ; (if (not display)
+    ;  nil
       [:table
        {:style {:float "left"}}
        [:tbody
@@ -34,7 +34,7 @@
           {:style {:padding "5px"}}
           (if (some? content)
             (content state)
-            nil)]]]])))
+            nil)]]]]));)
 
 (defn basic-tile-state-atom
   [title content]
@@ -89,9 +89,9 @@
                 (.log js/console (pr-str :ndx ndx))
                 (let [s (nth @all-tile-states-atom ndx)]
                   (.log js/console (pr-str (:title @s) (count (:child-tile-ndxes @s)) (:display @s)))
-                  (if (not (true? (:display @s)))
-                    v
-                    (conj v (tile-states s)))))
+                  ;(if (not (true? (:display @s)))
+                   ; v
+                    (into v (tile-states s))));)
               [tile-state]
               (:child-tile-ndxes @tile-state))]
       x)))
@@ -131,7 +131,7 @@
     (add-child-tile l1 b2)
     (reset! top-tile-state-atom l1)
     (swap! l1 assoc :display true)
-    (display-tiles l1)))
+    [display-tiles l1]))
 
 (defn start!
   []
