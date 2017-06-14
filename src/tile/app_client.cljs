@@ -28,7 +28,9 @@
             {:style {:float "right"}}
             [:input {:disabled (= tile-ndx 0)
                      :type "button"
-                     :value "X"}]]]]]
+                     :value "X"
+                     :on-click (fn []
+                                 (swap! state assoc :display false))}]]]]]
         [:tr
          {:style {:background-color "Cornsilk"}}
          [:td
