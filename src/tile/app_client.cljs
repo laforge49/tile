@@ -27,7 +27,7 @@
 
 (defn tile
   [state]
-  (let [{:keys [parent-tile-state child-tile-ndxes display title content tile-ndx]} @state]
+  (let [{:keys [parent-tile-ndx child-tile-ndxes display title content tile-ndx]} @state]
     (if (not display)
       nil
       [:table
@@ -43,16 +43,23 @@
            [:div
             {:style {:float "left"
                      :padding "5px"}}
+            (if (> tile-ndx 0)
+              [:a
+               {:on-click #(reset! selected-tile-ndx-atom parent-tile-ndx)
+                :style {:cursor "pointer"}}
+               [:strong "^"]])
+            " "
             [:a
              {:on-click #(reset! selected-tile-ndx-atom tile-ndx)
               :style {:cursor "pointer"}}
              [:strong (str title " ")]]]
-           [:div
-            {:style {:float "right"}}
-            [:input {:disabled (= tile-ndx 0)
-                     :type "button"
-                     :value "X"
-                     :on-click #(close-tile tile-ndx)}]]]]]
+           (if (> tile-ndx 0)
+             [:div
+              {:style {:float "right"}}
+              [:input {:disabled (= tile-ndx 0)
+                       :type "button"
+                       :value "X"
+                       :on-click #(close-tile tile-ndx)}]])]]]
         [:tr
          {:style {:background-color "Cornsilk"}}
          [:td
@@ -109,7 +116,7 @@
     (let [x (reduce
               (fn [v ndx]
                 (let [s (nth @all-tile-states-atom ndx)]
-                  (into v (tile-states s))));)
+                  (into v (tile-states s))))                ;)
               [tile-state]
               (:child-tile-ndxes @tile-state))]
       x)))
