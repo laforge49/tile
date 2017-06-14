@@ -9,11 +9,18 @@
 
 (defn close-tile
   [tile-ndx]
-  (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)]
+  (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
+        child-tile-ndxes (:child-tile-ndxes @tile-state-atom)]
     (if (and
           (> tile-ndx 0)
           (:display @tile-state-atom))
-          (swap! tile-state-atom assoc :display false))))
+      (do
+        (reduce
+          (fn [o ndx]
+            (close-tile ndx))
+          nil
+          child-tile-ndxes)
+        (swap! tile-state-atom assoc :display false)))))
 
 (defn tile
   [state]
