@@ -6,6 +6,7 @@
 
 (def top-tile-state-atom (atom nil))
 (def all-tile-states-atom (atom []))
+(def selected-tile-ndx-atom (atom 0))
 
 (defn close-tile
   [tile-ndx]
@@ -20,7 +21,9 @@
             (close-tile ndx))
           nil
           child-tile-ndxes)
-        (swap! tile-state-atom assoc :display false)))))
+        (swap! tile-state-atom assoc :display false)
+        (if (= tile-ndx @selected-tile-ndx-atom)
+          (reset! selected-tile-ndx-atom (:parent-tile-ndx @tile-state-atom)))))))
 
 (defn tile
   [state]
@@ -28,17 +31,22 @@
     (if (not display)
       nil
       [:table
-       {:style {:border "5px solid red" :float "left"}}
+       {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
+                          "5px solid blue"
+                          "5px solid lime")
+                :float "left"}}
        [:tbody
         [:tr
          [:td
           {:style {:background-color "yellow"}}
           [:div
            [:div
-            {:style {:float "left"}}
-            [:strong
-             {:style {:padding "5px"}}
-             (str title " ")]]
+            {:style {:float "left"
+                     :padding "5px"}}
+            [:a
+             {:on-click #(reset! selected-tile-ndx-atom tile-ndx)
+              :style {:cursor "pointer"}}
+             [:strong (str title " ")]]]
            [:div
             {:style {:float "right"}}
             [:input {:disabled (= tile-ndx 0)
@@ -78,7 +86,9 @@
                                                               :on-change (fn []
                                                                            (if (true? (:display @s))
                                                                              (close-tile ndx)
-                                                                             (swap! s assoc :display true)))}]
+                                                                             (do
+                                                                               (swap! s assoc :display true)
+                                                                               (reset! selected-tile-ndx-atom ndx))))}]
                                                      (:title @s)])))
                                         [:dev]
                                         (:child-tile-ndxes @state)))
