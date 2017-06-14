@@ -11,8 +11,8 @@
   [state]
   (let [{:keys [parent-tile-state child-tile-ndxes display title content]} @state]
     #_(.log js/console (pr-str :tile (count child-tile-ndxes) display title))
-   ; (if (not display)
-    ;  nil
+    (if (not display)
+      nil
       [:table
        {:style {:float "left"}}
        [:tbody
@@ -34,7 +34,7 @@
           {:style {:padding "5px"}}
           (if (some? content)
             (content state)
-            nil)]]]]));)
+            nil)]]]])))
 
 (defn basic-tile-state-atom
   [title content]
