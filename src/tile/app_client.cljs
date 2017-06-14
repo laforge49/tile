@@ -96,7 +96,10 @@
                                                                              (do
                                                                                (swap! s assoc :display true)
                                                                                (reset! selected-tile-ndx-atom ndx))))}]
-                                                     (:title @s)])))
+                                                     [:a
+                                                      {:on-click #(reset! selected-tile-ndx-atom ndx)
+                                                       :style {:cursor "pointer"}}
+                                                     (:title @s)]])))
                                         [:dev]
                                         (:child-tile-ndxes @state)))
                            :display false})
