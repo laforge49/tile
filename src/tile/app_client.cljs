@@ -28,45 +28,46 @@
 (defn tile
   [state]
   (let [{:keys [parent-tile-ndx child-tile-ndxes display title content tile-ndx]} @state]
-    (if (not display)
-      nil
-      [:table
-       {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
-                          "5px solid blue"
-                          "5px solid lime")
-                :float "left"}}
-       [:tbody
-        [:tr
-         [:td
-          {:style {:background-color "yellow"}}
-          [:div
+    [:div {:id (str "tile" tile-ndx)}
+     (if (not display)
+       nil
+       [:table
+        {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
+                           "5px solid blue"
+                           "5px solid lime")
+                 :float "left"}}
+        [:tbody
+         [:tr
+          [:td
+           {:style {:background-color "yellow"}}
            [:div
-            {:style {:float "left"
-                     :padding "5px"}}
+            [:div
+             {:style {:float "left"
+                      :padding "5px"}}
+             (if (> tile-ndx 0)
+               [:a
+                {:on-click #(reset! selected-tile-ndx-atom parent-tile-ndx)
+                 :style {:cursor "pointer"}}
+                [:strong "^"]])
+             " "
+             [:a
+              {:on-click #(reset! selected-tile-ndx-atom tile-ndx)
+               :style {:cursor "pointer"}}
+              [:strong (str title " ")]]]
             (if (> tile-ndx 0)
-              [:a
-               {:on-click #(reset! selected-tile-ndx-atom parent-tile-ndx)
-                :style {:cursor "pointer"}}
-               [:strong "^"]])
-            " "
-            [:a
-             {:on-click #(reset! selected-tile-ndx-atom tile-ndx)
-              :style {:cursor "pointer"}}
-             [:strong (str title " ")]]]
-           (if (> tile-ndx 0)
-             [:div
-              {:style {:float "right"}}
-              [:input {:disabled (= tile-ndx 0)
-                       :type "button"
-                       :value "X"
-                       :on-click #(close-tile tile-ndx)}]])]]]
-        [:tr
-         {:style {:background-color "Cornsilk"}}
-         [:td
-          {:style {:padding "5px"}}
-          (if (some? content)
-            (content state)
-            nil)]]]])))
+              [:div
+               {:style {:float "right"}}
+               [:input {:disabled (= tile-ndx 0)
+                        :type "button"
+                        :value "X"
+                        :on-click #(close-tile tile-ndx)}]])]]]
+         [:tr
+          {:style {:background-color "Cornsilk"}}
+          [:td
+           {:style {:padding "5px"}}
+           (if (some? content)
+             (content state)
+             nil)]]]])]))
 
 (defn basic-tile-state-atom
   [title content]
@@ -77,6 +78,13 @@
         tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
+
+(defn findPos
+  ([obj] (findPos obj 0))
+  ([obj curtop]
+   (if (nil? (.-offsetParent obj))
+     curtop
+     (recur (.-offsetParent obj) (+ curtop obj.offsetTop)))))
 
 (defn list-tile-state-atom
   [title]
@@ -98,7 +106,8 @@
                                                                                (reset! selected-tile-ndx-atom ndx))))}]
                                                      (if (true? (:display @s))
                                                        [:a
-                                                        {:on-click #(reset! selected-tile-ndx-atom ndx)
+                                                        {:on-click (fn []
+                                                                     (reset! selected-tile-ndx-atom ndx))
                                                          :style {:cursor "pointer"}}
                                                         (:title @s)]
                                                        (:title @s))])))
