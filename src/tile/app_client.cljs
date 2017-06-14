@@ -10,7 +10,7 @@
 (defn tile
   [state]
   (let [{:keys [parent-tile-state child-tile-ndxes display title content]} @state]
-    (.log js/console (pr-str (count child-tile-ndxes) display title))
+    #_(.log js/console (pr-str :tile (count child-tile-ndxes) display title))
    ; (if (not display)
     ;  nil
       [:table
@@ -55,18 +55,15 @@
                            :content (fn [state]
                                       (reduce
                                         (fn [v ndx]
-                                          (let [s (nth @all-tile-states-atom ndx)
-                                                d @s
-                                                t (:title d)
-                                                checked (:display d)]
+                                          (let [s (nth @all-tile-states-atom ndx)]
                                             (conj v [:div
                                                      [:input {:type "checkbox"
-                                                              :checked (true? checked)
+                                                              :checked (true? (:display @s))
                                                               :on-change (fn
                                                                            []
-                                                                           (swap! s assoc :display (not (true? checked)))
-                                                                           (.log js/console (pr-str (:title @s) (:display @s))))}]
-                                                     t])))
+                                                                           (swap! s assoc :display (not (true? (:display @s))))
+                                                                           #_(.log js/console (pr-str :listitem (:title @s) (:display @s))))}]
+                                                     (:title @s)])))
                                         [:dev]
                                         (:child-tile-ndxes @state)))
                            :display false})
@@ -86,9 +83,9 @@
     [tile-state]
     (let [x (reduce
               (fn [v ndx]
-                (.log js/console (pr-str :ndx ndx))
+                #_(.log js/console (pr-str :ndx ndx))
                 (let [s (nth @all-tile-states-atom ndx)]
-                  (.log js/console (pr-str (:title @s) (count (:child-tile-ndxes @s)) (:display @s)))
+                  #_(.log js/console (pr-str :tile-state-n (:title @s) (count (:child-tile-ndxes @s)) (:display @s)))
                   ;(if (not (true? (:display @s)))
                    ; v
                     (into v (tile-states s))));)
@@ -98,10 +95,10 @@
 
 (defn display-tiles
   [state]
-  ;(.log js/console (pr-str (count (tile-states state))))
+  #_(.log js/console (pr-str (count (tile-states state))))
   (reduce
     (fn [v s]
-      (.log js/console (pr-str :hey (:title @s)))
+      #_(.log js/console (pr-str :hey (:title @s)))
       (let [i [tile s]]
         (if (nil? i)
           v
@@ -131,7 +128,8 @@
     (add-child-tile l1 b2)
     (reset! top-tile-state-atom l1)
     (swap! l1 assoc :display true)
-    [display-tiles l1]))
+    (fn []
+      [display-tiles l1])))
 
 (defn start!
   []
