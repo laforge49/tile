@@ -8,6 +8,11 @@
 (def all-tile-states-atom (atom []))
 (def selected-tile-ndx-atom (atom 0))
 
+(defn select-tile
+  [tile-ndx]
+  (reset! selected-tile-ndx-atom tile-ndx)
+  (.scrollIntoView (.getElementById js/document (str "tile" tile-ndx))))
+
 (defn close-tile
   [tile-ndx]
   (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
@@ -23,7 +28,7 @@
           child-tile-ndxes)
         (swap! tile-state-atom assoc :display false)
         (if (= tile-ndx @selected-tile-ndx-atom)
-          (reset! selected-tile-ndx-atom (:parent-tile-ndx @tile-state-atom)))))))
+          (select-tile (:parent-tile-ndx @tile-state-atom)))))))
 
 (defn tile
   [state]
@@ -35,7 +40,8 @@
         {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
                            "5px solid blue"
                            "5px solid lime")
-                 :float "left"}}
+                 ;:float "left"
+                 }}
         [:tbody
          [:tr
           [:td
@@ -46,12 +52,12 @@
                       :padding "5px"}}
              (if (> tile-ndx 0)
                [:a
-                {:on-click #(reset! selected-tile-ndx-atom parent-tile-ndx)
+                {:on-click #(select-tile parent-tile-ndx)
                  :style {:cursor "pointer"}}
                 [:strong "^"]])
              " "
              [:a
-              {:on-click #(reset! selected-tile-ndx-atom tile-ndx)
+              {:on-click #(select-tile tile-ndx)
                :style {:cursor "pointer"}}
               [:strong (str title " ")]]]
             (if (> tile-ndx 0)
@@ -79,13 +85,6 @@
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
 
-(defn findPos
-  ([obj] (findPos obj 0))
-  ([obj curtop]
-   (if (nil? (.-offsetParent obj))
-     curtop
-     (recur (.-offsetParent obj) (+ curtop obj.offsetTop)))))
-
 (defn list-tile-state-atom
   [title]
   (let [tile-state-atom (atom
@@ -103,11 +102,13 @@
                                                                              (close-tile ndx)
                                                                              (do
                                                                                (swap! s assoc :display true)
-                                                                               (reset! selected-tile-ndx-atom ndx))))}]
+                                                                               (.setTimeout js/window
+                                                                                            #(select-tile ndx)
+                                                                                            0)
+                                                                               )))}]
                                                      (if (true? (:display @s))
                                                        [:a
-                                                        {:on-click (fn []
-                                                                     (reset! selected-tile-ndx-atom ndx))
+                                                        {:on-click #(select-tile ndx)
                                                          :style {:cursor "pointer"}}
                                                         (:title @s)]
                                                        (:title @s))])))
