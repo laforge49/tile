@@ -111,6 +111,7 @@
 (defn calling-component
   []
   (let [l1 (list-tile-state-atom "Basic tile example")
+        l2 (list-tile-state-atom "sub-list")
         b1 (basic-tile-state-atom
              "Test"
              (fn [state]
@@ -126,8 +127,9 @@
              (fn [state]
                [:div 222]))
         ]
+    (add-child-tile l1 l2)
     (add-child-tile l1 b1)
-    (add-child-tile l1 b2)
+    (add-child-tile l2 b2)
     (reset! top-tile-state-atom l1)
     (swap! l1 assoc :display true)
     (fn []
