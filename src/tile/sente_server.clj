@@ -146,7 +146,6 @@
             ring-handler (var main-ring-handler)
 
             [port stop-fn]
-            ;;; TODO Choose (uncomment) a supported web server ------------------
             (let [stop-fn (http-kit/run-server ring-handler {:port port})]
                  [(:local-port (meta stop-fn)) (fn [] (stop-fn :timeout 100))])
 
@@ -157,4 +156,4 @@
            (reset! web-server_ stop-fn)))
 
 (defn stop! [] (stop-router!) (stop-web-server!))
-(defn start! [] (start-router!) (start-web-server!))
+(defn start! [port] (start-router!) (start-web-server! port))

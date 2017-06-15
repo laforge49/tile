@@ -27,7 +27,17 @@
              "Test2"
              (fn [state]
                [:div 222]))
+        m1 (tile/map-tile-state-atom
+             "basic map"
+             {}
+             {:a 1 :b 2 :c 3})
+        m2 (tile/map-tile-state-atom
+             "map2"
+             {}
+             {:a 1 :b {:x 55 :y :apples} :c 3})
         ]
+    (tile/add-child-tile l1 m1)
+    (tile/add-child-tile l1 m2)
     (tile/add-child-tile l1 l2)
     (tile/add-child-tile l1 b1)
     (tile/add-child-tile l2 b2)

@@ -3,4 +3,4 @@
 
 
 (defn -main "For `lein run`, etc." []
-      (server/start!))
+      (server/start! 3001))

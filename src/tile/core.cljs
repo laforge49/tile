@@ -75,8 +75,8 @@
   [title content]
   (let [tile-state-atom (atom {:child-tile-ndxes []
                                :title title
-                               :content content
-                               :display false})
+                               :display false
+                               :content content})
         tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
@@ -87,6 +87,7 @@
         (atom
           {:child-tile-ndxes []
            :title title
+           :display false
            :content
            (fn [state]
              (reduce
@@ -112,8 +113,80 @@
                                (:title @s)]
                               (:title @s))])))
                [:dev]
-               (:child-tile-ndxes @state)))
-           :display false})
+               (:child-tile-ndxes @state)))})
+        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
+    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+    tile-state-atom))
+
+(declare display-map)
+
+(defn eval
+  [k ifn p]
+  (let [i (k ifn)]
+    (if (nil? i)
+      nil
+      (i p))))
+
+(defn sub-display
+  [ifn path p k m]
+  (let [plus-atm (atom p)
+        star-atm (atom p)]
+    (fn [ifn path p k m]
+      (if @plus-atm
+        [:div
+         (str k " ")
+         [:a
+          {:style    {:cursor "pointer" :color "blue"}
+           :on-click (fn []
+                       (reset! plus-atm false)
+                       (reset! star-atm false))}
+          [:strong "="]]
+         " {"
+         [:br]
+         [:div {:style {:padding-left "1em"}}
+          (display-map ifn (eval k ifn path) path @star-atm [:div] m)]
+         "}"]
+        [:div (str k " ")
+         [:a
+          {:style    {:cursor "pointer" :color "blue"}
+           :on-click (fn []
+                       (reset! plus-atm true))}
+          [:strong "+"]]
+         [:a
+          {:style    {:cursor "pointer" :color "blue"}
+           :on-click (fn []
+                       (reset! plus-atm true)
+                       (reset! star-atm true))}
+          [:strong "*"]]
+         ]))))
+
+(defn display-map
+  ([ifn m]
+   (display-map ifn nil [] false [:div] m))
+  ([ifn index path p v m]
+   (reduce
+     (fn [v e]
+       (let [[ke value] (if (nil? index)
+                          [(key e) (val e)]
+                          [(first (val e)) ((first (val e)) m)])
+             path (conj path ke)]
+         (if (map? value)
+           (conj v [sub-display ifn path p ke value])
+           (conj v [:div (str ke " = " (pr-str value))]))))
+     v
+     (if (nil? index)
+       (into (sorted-map) m)
+       index))))
+
+(defn map-tile-state-atom
+  [title ifn m]
+  (let [tile-state-atom
+        (atom {:child-tile-ndxes []
+               :title title
+               :display false
+               :content
+               (fn [state]
+                 (display-map ifn m))})
         tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
