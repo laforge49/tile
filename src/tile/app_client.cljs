@@ -5,11 +5,9 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [tile.core :as tile]))
 
-(def selected-tile-ndx-atom (atom 0))
-
 (defn select-tile
   [tile-ndx]
-  (reset! selected-tile-ndx-atom tile-ndx)
+  (reset! tile/selected-tile-ndx-atom tile-ndx)
   (.scrollIntoView (.getElementById js/document (str "tile" tile-ndx))))
 
 (defn close-tile
@@ -26,7 +24,7 @@
           nil
           child-tile-ndxes)
         (swap! tile-state-atom assoc :display false)
-        (if (= tile-ndx @selected-tile-ndx-atom)
+        (if (= tile-ndx @tile/selected-tile-ndx-atom)
           (select-tile (:parent-tile-ndx @tile-state-atom)))))))
 
 (defn tile
@@ -36,7 +34,7 @@
      (if (not display)
        nil
        [:table
-        {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
+        {:style {:border (if (= @tile/selected-tile-ndx-atom tile-ndx)
                            "5px solid blue"
                            "5px solid lime")
                  ;:float "left"
