@@ -5,154 +5,11 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [tile.core :as tile]))
 
-(defn close-tile
-  [tile-ndx]
-  (let [tile-state-atom (nth @tile/all-tile-states-atom tile-ndx)
-        child-tile-ndxes (:child-tile-ndxes @tile-state-atom)]
-    (if (and
-          (> tile-ndx 0)
-          (:display @tile-state-atom))
-      (do
-        (reduce
-          (fn [o ndx]
-            (close-tile ndx))
-          nil
-          child-tile-ndxes)
-        (swap! tile-state-atom assoc :display false)
-        (if (= tile-ndx @tile/selected-tile-ndx-atom)
-          (tile/select-tile (:parent-tile-ndx @tile-state-atom)))))))
-
-(defn tile
-  [state]
-  (let [{:keys [parent-tile-ndx child-tile-ndxes display title content tile-ndx]} @state]
-    [:div {:id (str "tile" tile-ndx)}
-     (if (not display)
-       nil
-       [:table
-        {:style {:border (if (= @tile/selected-tile-ndx-atom tile-ndx)
-                           "5px solid blue"
-                           "5px solid lime")
-                 ;:float "left"
-                 }}
-        [:tbody
-         [:tr
-          [:td
-           {:style {:background-color "yellow"}}
-           [:div
-            [:div
-             {:style {:float "left"
-                      :padding "5px"}}
-             (if (> tile-ndx 0)
-               [:a
-                {:on-click #(tile/select-tile parent-tile-ndx)
-                 :style {:cursor "pointer"}}
-                [:strong "^"]])
-             " "
-             [:a
-              {:on-click #(tile/select-tile tile-ndx)
-               :style {:cursor "pointer"}}
-              [:strong (str title " ")]]]
-            (if (> tile-ndx 0)
-              [:div
-               {:style {:float "right"}}
-               [:input {:disabled (= tile-ndx 0)
-                        :type "button"
-                        :value "X"
-                        :on-click #(close-tile tile-ndx)}]])]]]
-         [:tr
-          {:style {:background-color "Cornsilk"}}
-          [:td
-           {:style {:padding "5px"}}
-           (if (some? content)
-             (content state)
-             nil)]]]])]))
-
-(defn basic-tile-state-atom
-  [title content]
-  (let [tile-state-atom (atom {:child-tile-ndxes []
-                               :title title
-                               :content content
-                               :display false})
-        tile-ndx (- (count (swap! tile/all-tile-states-atom conj tile-state-atom)) 1)]
-    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
-    tile-state-atom))
-
-(defn list-tile-state-atom
-  [title]
-  (let [tile-state-atom
-        (atom
-          {:child-tile-ndxes []
-           :title title
-           :content
-           (fn [state]
-             (reduce
-               (fn [v ndx]
-                 (let [s (nth @tile/all-tile-states-atom ndx)]
-                   (conj v [:div
-                            [:input {:type "checkbox"
-                                     :checked (true? (:display @s))
-                                     :on-change
-                                     (fn []
-                                       (if (true? (:display @s))
-                                         (close-tile ndx)
-                                         (do
-                                           (swap! s assoc :display true)
-                                           (.setTimeout js/window
-                                                        #(tile/select-tile ndx)
-                                                        0)
-                                           )))}]
-                            (if (true? (:display @s))
-                              [:a
-                               {:on-click #(tile/select-tile ndx)
-                                :style {:cursor "pointer"}}
-                               (:title @s)]
-                              (:title @s))])))
-               [:dev]
-               (:child-tile-ndxes @state)))
-           :display false})
-        tile-ndx (- (count (swap! tile/all-tile-states-atom conj tile-state-atom)) 1)]
-    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
-    tile-state-atom))
-
-(defn add-child-tile
-  [parent-tile-state-atom child-tile-state-atom]
-  (swap! child-tile-state-atom assoc :parent-tile-ndx (:tile-ndx @parent-tile-state-atom))
-  (swap! parent-tile-state-atom
-         (fn [d]
-           (assoc
-             d
-             :child-tile-ndxes
-             (conj (:child-tile-ndxes d)
-                   (:tile-ndx @child-tile-state-atom))))))
-
-(defn tile-states
-  [tile-state]
-  (if (empty? (:child-tile-ndxes @tile-state))
-    [tile-state]
-    (let [x (reduce
-              (fn [v ndx]
-                (let [s (nth @tile/all-tile-states-atom ndx)]
-                  (into v (tile-states s))))                ;)
-              [tile-state]
-              (:child-tile-ndxes @tile-state))]
-      x)))
-
-(defn display-tiles
-  [state]
-  (reduce
-    (fn [v s]
-      (let [i [tile s]]
-        (if (nil? i)
-          v
-          (conj v i))))
-    [:div]
-    (tile-states state)))
-
 (defn calling-component
   []
-  (let [l1 (list-tile-state-atom "Basic tile example")
-        l2 (list-tile-state-atom "sub-list")
-        b1 (basic-tile-state-atom
+  (let [l1 (tile/list-tile-state-atom "Basic tile example")
+        l2 (tile/list-tile-state-atom "sub-list")
+        b1 (tile/basic-tile-state-atom
              "Test"
              (fn [state]
                [:div
@@ -166,17 +23,17 @@
                                        5000
                                        (fn [cb-reply]
                                          (->output! "Callback reply: %s" cb-reply))))}]]))
-        b2 (basic-tile-state-atom
+        b2 (tile/basic-tile-state-atom
              "Test2"
              (fn [state]
                [:div 222]))
         ]
-    (add-child-tile l1 l2)
-    (add-child-tile l1 b1)
-    (add-child-tile l2 b2)
+    (tile/add-child-tile l1 l2)
+    (tile/add-child-tile l1 b1)
+    (tile/add-child-tile l2 b2)
     (swap! l1 assoc :display true)
     (fn []
-      [display-tiles l1])))
+      [tile/display-tiles l1])))
 
 (defn start!
   []
