@@ -2,10 +2,9 @@
   (:require [tile.sente-client :as client :refer [->output! chsk-send! chsk chsk-state]]
             [clojure.string :as str]
             [reagent.core :as reagent :refer [atom]]
-            [taoensso.sente :as sente :refer (cb-success?)]))
+            [taoensso.sente :as sente :refer (cb-success?)]
+            [tile.core :as tile]))
 
-(def top-tile-state-atom (atom nil))
-(def all-tile-states-atom (atom []))
 (def selected-tile-ndx-atom (atom 0))
 
 (defn select-tile
@@ -15,7 +14,7 @@
 
 (defn close-tile
   [tile-ndx]
-  (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
+  (let [tile-state-atom (nth @tile/all-tile-states-atom tile-ndx)
         child-tile-ndxes (:child-tile-ndxes @tile-state-atom)]
     (if (and
           (> tile-ndx 0)
@@ -81,7 +80,7 @@
                                :title title
                                :content content
                                :display false})
-        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
+        tile-ndx (- (count (swap! tile/all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
 
@@ -95,7 +94,7 @@
            (fn [state]
              (reduce
                (fn [v ndx]
-                 (let [s (nth @all-tile-states-atom ndx)]
+                 (let [s (nth @tile/all-tile-states-atom ndx)]
                    (conj v [:div
                             [:input {:type "checkbox"
                                      :checked (true? (:display @s))
@@ -118,7 +117,7 @@
                [:dev]
                (:child-tile-ndxes @state)))
            :display false})
-        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
+        tile-ndx (- (count (swap! tile/all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
 
@@ -139,7 +138,7 @@
     [tile-state]
     (let [x (reduce
               (fn [v ndx]
-                (let [s (nth @all-tile-states-atom ndx)]
+                (let [s (nth @tile/all-tile-states-atom ndx)]
                   (into v (tile-states s))))                ;)
               [tile-state]
               (:child-tile-ndxes @tile-state))]
@@ -182,7 +181,6 @@
     (add-child-tile l1 l2)
     (add-child-tile l1 b1)
     (add-child-tile l2 b2)
-    (reset! top-tile-state-atom l1)
     (swap! l1 assoc :display true)
     (fn []
       [display-tiles l1])))
