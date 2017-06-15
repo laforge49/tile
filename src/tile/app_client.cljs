@@ -87,34 +87,37 @@
 
 (defn list-tile-state-atom
   [title]
-  (let [tile-state-atom (atom
-                          {:child-tile-ndxes []
-                           :title title
-                           :content (fn [state]
-                                      (reduce
-                                        (fn [v ndx]
-                                          (let [s (nth @all-tile-states-atom ndx)]
-                                            (conj v [:div
-                                                     [:input {:type "checkbox"
-                                                              :checked (true? (:display @s))
-                                                              :on-change (fn []
-                                                                           (if (true? (:display @s))
-                                                                             (close-tile ndx)
-                                                                             (do
-                                                                               (swap! s assoc :display true)
-                                                                               (.setTimeout js/window
-                                                                                            #(select-tile ndx)
-                                                                                            0)
-                                                                               )))}]
-                                                     (if (true? (:display @s))
-                                                       [:a
-                                                        {:on-click #(select-tile ndx)
-                                                         :style {:cursor "pointer"}}
-                                                        (:title @s)]
-                                                       (:title @s))])))
-                                        [:dev]
-                                        (:child-tile-ndxes @state)))
-                           :display false})
+  (let [tile-state-atom
+        (atom
+          {:child-tile-ndxes []
+           :title title
+           :content
+           (fn [state]
+             (reduce
+               (fn [v ndx]
+                 (let [s (nth @all-tile-states-atom ndx)]
+                   (conj v [:div
+                            [:input {:type "checkbox"
+                                     :checked (true? (:display @s))
+                                     :on-change
+                                     (fn []
+                                       (if (true? (:display @s))
+                                         (close-tile ndx)
+                                         (do
+                                           (swap! s assoc :display true)
+                                           (.setTimeout js/window
+                                                        #(select-tile ndx)
+                                                        0)
+                                           )))}]
+                            (if (true? (:display @s))
+                              [:a
+                               {:on-click #(select-tile ndx)
+                                :style {:cursor "pointer"}}
+                               (:title @s)]
+                              (:title @s))])))
+               [:dev]
+               (:child-tile-ndxes @state)))
+           :display false})
         tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
@@ -122,7 +125,13 @@
 (defn add-child-tile
   [parent-tile-state-atom child-tile-state-atom]
   (swap! child-tile-state-atom assoc :parent-tile-ndx (:tile-ndx @parent-tile-state-atom))
-  (swap! parent-tile-state-atom (fn [d] (assoc d :child-tile-ndxes (conj (:child-tile-ndxes d) (:tile-ndx @child-tile-state-atom))))))
+  (swap! parent-tile-state-atom
+         (fn [d]
+           (assoc
+             d
+             :child-tile-ndxes
+             (conj (:child-tile-ndxes d)
+                   (:tile-ndx @child-tile-state-atom))))))
 
 (defn tile-states
   [tile-state]
@@ -158,9 +167,13 @@
                 [:input {:type "button"
                          :value "chsk-send! (with reply)"
                          :on-click (fn []
-                                     (->output! "Button 2 was clicked (will receive reply from server)")
-                                     (chsk-send! [:example/button2 {:had-a-callback? "indeed"}] 5000
-                                                 (fn [cb-reply] (->output! "Callback reply: %s" cb-reply))))}]]))
+                                     (->output!
+                                       "Button 2 was clicked (will receive reply from server)")
+                                     (chsk-send!
+                                       [:example/button2 {:had-a-callback? "indeed"}]
+                                       5000
+                                       (fn [cb-reply]
+                                         (->output! "Callback reply: %s" cb-reply))))}]]))
         b2 (basic-tile-state-atom
              "Test2"
              (fn [state]
