@@ -5,11 +5,6 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [tile.core :as tile]))
 
-(defn select-tile
-  [tile-ndx]
-  (reset! tile/selected-tile-ndx-atom tile-ndx)
-  (.scrollIntoView (.getElementById js/document (str "tile" tile-ndx))))
-
 (defn close-tile
   [tile-ndx]
   (let [tile-state-atom (nth @tile/all-tile-states-atom tile-ndx)
@@ -25,7 +20,7 @@
           child-tile-ndxes)
         (swap! tile-state-atom assoc :display false)
         (if (= tile-ndx @tile/selected-tile-ndx-atom)
-          (select-tile (:parent-tile-ndx @tile-state-atom)))))))
+          (tile/select-tile (:parent-tile-ndx @tile-state-atom)))))))
 
 (defn tile
   [state]
@@ -49,12 +44,12 @@
                       :padding "5px"}}
              (if (> tile-ndx 0)
                [:a
-                {:on-click #(select-tile parent-tile-ndx)
+                {:on-click #(tile/select-tile parent-tile-ndx)
                  :style {:cursor "pointer"}}
                 [:strong "^"]])
              " "
              [:a
-              {:on-click #(select-tile tile-ndx)
+              {:on-click #(tile/select-tile tile-ndx)
                :style {:cursor "pointer"}}
               [:strong (str title " ")]]]
             (if (> tile-ndx 0)
@@ -103,12 +98,12 @@
                                          (do
                                            (swap! s assoc :display true)
                                            (.setTimeout js/window
-                                                        #(select-tile ndx)
+                                                        #(tile/select-tile ndx)
                                                         0)
                                            )))}]
                             (if (true? (:display @s))
                               [:a
-                               {:on-click #(select-tile ndx)
+                               {:on-click #(tile/select-tile ndx)
                                 :style {:cursor "pointer"}}
                                (:title @s)]
                               (:title @s))])))
