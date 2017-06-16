@@ -71,22 +71,24 @@
              (content state)
              nil)]]]])]))
 
-(defn basic-tile-state-atom
-  [title content]
-  (let [tile-state-atom (atom {:child-tile-ndxes []
-                               :title title
-                               :display false
-                               :content content})
-        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
-    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+(defn create-tile-state
+  [make title]
+  (let [tile-state-atom (make)]
+    (swap! tile-state-atom assoc :title title)
+    (swap! tile-state-atom assoc :tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1))
+    (swap! tile-state-atom assoc :display true)
     tile-state-atom))
 
+(defn basic-tile-state-atom
+  [content]
+  (atom {:child-tile-ndxes []
+         :content content}))
+
 (defn list-tile-state-atom
-  [title]
+  []
   (let [tile-state-atom
         (atom
           {:child-tile-ndxes []
-           :title title
            :display false
            :content
            (fn [state]
@@ -113,9 +115,7 @@
                                (:title @s)]
                               (:title @s))])))
                [:dev]
-               (:child-tile-ndxes @state)))})
-        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
-    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+               (:child-tile-ndxes @state)))})]
     tile-state-atom))
 
 (declare display-map map-tile-state-atom)
@@ -185,18 +185,14 @@
      order))
 
 (defn map-tile-state-atom
-  ([title ifn m]
-   (map-tile-state-atom title ifn (into [] (into (sorted-map) m)) [] false [:div] m))
-  ([title ifn index path p v m]
+  ([ifn m]
+   (map-tile-state-atom ifn (into [] (into (sorted-map) m)) [] false [:div] m))
+  ([ifn index path p v m]
   (let [tile-state-atom
         (atom {:child-tile-ndxes []
-               :title title
-               :display false
                :content
                (fn [state]
-                 (display-map ifn index path p v m))})
-        tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
-    (swap! tile-state-atom assoc :tile-ndx tile-ndx)
+                 (display-map ifn index path p v m))})]
     tile-state-atom)))
 
 (defn add-child-tile
@@ -210,22 +206,10 @@
              (conj (:child-tile-ndxes d)
                    (:tile-ndx @child-tile-state-atom))))))
 
-(defn tile-states
-  [tile-state]
-  (if (empty? (:child-tile-ndxes @tile-state))
-    [tile-state]
-    (let [x (reduce
-              (fn [v ndx]
-                (let [s (nth @all-tile-states-atom ndx)]
-                  (into v (tile-states s))))
-              [tile-state]
-              (:child-tile-ndxes @tile-state))]
-      x)))
-
 (defn display-tiles
-  [state]
+  []
   (reduce
     (fn [v s]
       (conj v [tile s]))
     [:div]
-    (tile-states state)))
+    @all-tile-states-atom))
