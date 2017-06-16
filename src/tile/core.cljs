@@ -171,31 +171,6 @@
           [:strong "*"]]
          ]))))
 
-(defn child-ndx-map
-  [parent-ndx title ifn index path m]
-  (if (nil? index)
-    (reduce
-      (fn [cm e]
-        (if (map? (val e))
-          (let [k (key e)
-                path (conj path k)]
-            (assoc
-              cm
-              k
-              (:tile-ndx
-                (map-tile-state-atom
-                  title
-                  ifn
-                  (eval k ifn path)
-                  path
-                  false
-                  [:div]
-                  (val e)))))
-          cm))
-      {}
-      m)
-    ))
-
 (defn display-map
   [ifn order path p v m]
    (reduce
