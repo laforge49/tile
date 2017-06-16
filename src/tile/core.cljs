@@ -217,7 +217,7 @@
     (let [x (reduce
               (fn [v ndx]
                 (let [s (nth @all-tile-states-atom ndx)]
-                  (into v (tile-states s))))                ;)
+                  (into v (tile-states s))))
               [tile-state]
               (:child-tile-ndxes @tile-state))]
       x)))
@@ -226,9 +226,6 @@
   [state]
   (reduce
     (fn [v s]
-      (let [i [tile s]]
-        (if (nil? i)
-          v
-          (conj v i))))
+      (conj v [tile s]))
     [:div]
     (tile-states state)))
