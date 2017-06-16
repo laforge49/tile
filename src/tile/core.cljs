@@ -118,14 +118,25 @@
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
     tile-state-atom))
 
-(declare display-map)
+(declare display-map map-tile-state-atom)
 
 (defn eval
-  [k ifn p]
+  [k ifn path]
   (let [i (k ifn)]
     (if (nil? i)
       nil
-      (i p))))
+      (i path))))
+
+(defn ordered
+  [k ifn path m]
+  (let [index (eval k ifn path)]
+    (if (nil? index)
+      (into [] (into (sorted-map) m))
+      (reduce
+        (fn [v e]
+          [(first (val e)) ((first (val e)) m)])
+        []
+        index))))
 
 (defn sub-display
   [ifn path p k m]
@@ -144,7 +155,7 @@
          " {"
          [:br]
          [:div {:style {:padding-left "1em"}}
-          (display-map ifn (eval k ifn path) path @star-atm [:div] m)]
+          (display-map ifn (ordered k ifn path m) path @star-atm [:div] m)]
          "}"]
         [:div (str k " ")
          [:a
@@ -160,36 +171,58 @@
           [:strong "*"]]
          ]))))
 
+(defn child-ndx-map
+  [parent-ndx title ifn index path m]
+  (if (nil? index)
+    (reduce
+      (fn [cm e]
+        (if (map? (val e))
+          (let [k (key e)
+                path (conj path k)]
+            (assoc
+              cm
+              k
+              (:tile-ndx
+                (map-tile-state-atom
+                  title
+                  ifn
+                  (eval k ifn path)
+                  path
+                  false
+                  [:div]
+                  (val e)))))
+          cm))
+      {}
+      m)
+    ))
+
 (defn display-map
-  ([ifn m]
-   (display-map ifn nil [] false [:div] m))
-  ([ifn index path p v m]
+  [ifn order path p v m]
    (reduce
      (fn [v e]
-       (let [[ke value] (if (nil? index)
-                          [(key e) (val e)]
-                          [(first (val e)) ((first (val e)) m)])
+       (let [ke (first e)
+             value (second e)
              path (conj path ke)]
          (if (map? value)
            (conj v [sub-display ifn path p ke value])
            (conj v [:div (str ke " = " (pr-str value))]))))
      v
-     (if (nil? index)
-       (into (sorted-map) m)
-       index))))
+     order))
 
 (defn map-tile-state-atom
-  [title ifn m]
+  ([title ifn m]
+   (map-tile-state-atom title ifn (into [] (into (sorted-map) m)) [] false [:div] m))
+  ([title ifn index path p v m]
   (let [tile-state-atom
         (atom {:child-tile-ndxes []
                :title title
                :display false
                :content
                (fn [state]
-                 (display-map ifn m))})
+                 (display-map ifn index path p v m))})
         tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)]
     (swap! tile-state-atom assoc :tile-ndx tile-ndx)
-    tile-state-atom))
+    tile-state-atom)))
 
 (defn add-child-tile
   [parent-tile-state-atom child-tile-state-atom]
