@@ -85,7 +85,7 @@
          :content content}))
 
 (defn list-tile-state-atom
-  []
+  [children]
   (let [tile-state-atom
         (atom
           {:child-tile-ndxes []

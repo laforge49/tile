@@ -27,14 +27,6 @@
     (fn [state]
       [:div 222])))
 
-(defn make-l2
-  []
-  (tile/list-tile-state-atom))
-
-(defn make-l1
-  []
-  (tile/list-tile-state-atom))
-
 (defn make-m1
   []
   (tile/map-tile-state-atom
@@ -47,6 +39,19 @@
     {}
     {:a 1 :b {:x 55 :y :apples} :c 3}))
 
+(defn make-l2
+  []
+  (tile/list-tile-state-atom
+    [{:make make-b2 :title "Test2"}]))
+
+(defn make-l1
+  []
+  (tile/list-tile-state-atom
+    [{:make make-b1 :title "Test"}
+     {:make make-m1 :title "Basic map"}
+     {:make make-m2 :title "Map2"}
+     {:make make-l2 :title "Sub-list"}]))
+
 (defn calling-component
   []
     #_(tile/add-child-tile l1 m1)
@@ -54,35 +59,14 @@
     #_(tile/add-child-tile l1 l2)
     #_(tile/add-child-tile l1 b1)
     #_(tile/add-child-tile l2 b2)
-  (let [l1
-        (tile/create-tile-state
-          make-l1
-          "Basic tile example")
-        b1
-        (tile/create-tile-state
-          make-b1
-          "Test")
-        b2
-        (tile/create-tile-state
-          make-b2
-          "Test2")
-        m1
-        (tile/create-tile-state
-          make-m1
-          "Basic map")
-        m2
-        (tile/create-tile-state
-          make-m2
-          "Map2")
-        l2
-        (tile/create-tile-state
-          make-l2
-          "Sub-list")]
-    (swap! b1 assoc :parent-tile-ndx (:tile-ndx @l1))
-    (swap! m1 assoc :parent-tile-ndx (:tile-ndx @l1))
-    (swap! m2 assoc :parent-tile-ndx (:tile-ndx @l1))
-    (swap! l2 assoc :parent-tile-ndx (:tile-ndx @l1))
-    (swap! b2 assoc :parent-tile-ndx (:tile-ndx @l2)))
+  (tile/create-tile-state
+    make-l1
+    "Basic tile example")
+    ;(swap! b1 assoc :parent-tile-ndx (:tile-ndx @l1))
+    ;(swap! m1 assoc :parent-tile-ndx (:tile-ndx @l1))
+    ;(swap! m2 assoc :parent-tile-ndx (:tile-ndx @l1))
+    ;(swap! l2 assoc :parent-tile-ndx (:tile-ndx @l1))
+    ;(swap! b2 assoc :parent-tile-ndx (:tile-ndx @l2)))
   (fn []
       [tile/display-tiles]))
 
