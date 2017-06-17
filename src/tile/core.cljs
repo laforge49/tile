@@ -81,15 +81,13 @@
 
 (defn basic-tile-state-atom
   [content]
-  (atom {:child-tile-ndxes []
-         :content content}))
+  (atom {:content content}))
 
 (defn list-tile-state-atom
   [children]
   (let [tile-state-atom
         (atom
-          {:child-tile-ndxes []
-           :children children
+          {:children children
            :display false
            :content
            (fn [state]
@@ -102,40 +100,31 @@
                        s (if (> ndx -1)
                            (nth @all-tile-states-atom ndx)
                            nil)]
-                   (conj v #_[:input {:type "checkbox"
-                                      :checked (true? (:display @s))
-                                      :on-change
-                                      (fn []
-                                        (if (true? (:display @s))
-                                          (close-tile ndx)
-                                          (do
-                                            (swap! s assoc :display true)
-                                            (.setTimeout js/window
-                                                         #(select-tile ndx)
-                                                         0)
-                                            )))}]
-                         (if (some? s)
-                           [:div
-                            [:a
-                             {:on-click #(select-tile ndx)
-                              :style {:cursor "pointer"}}
-                             title]
-                            " "
-                            "<"]
-                           [:div
-                            title
-                            " "
-                            [:a
-                             {:on-click (fn []
-                                          (let [s (create-tile-state make title)
-                                                ndx (:tile-ndx @s)]
-                                            (swap! s assoc :parent-tile-ndx (:tile-ndx @state))
-                                            (swap! state assoc-in [child-ndx :ndx] ndx)
-                                            (.setTimeout js/window
-                                                         #(select-tile ndx)
-                                                         0)))
-                              :style {:cursor "pointer"}}
-                             ">"]]))))
+                   (conj v (if (some? s)
+                             [:div
+                              [:a
+                               {:on-click #(select-tile ndx)
+                                :style {:cursor "pointer"}}
+                               title]
+                              " "
+                              [:a
+                               {:on-click #(close-tile ndx)
+                                :style {:cursor "pointer"}}
+                               "<"]]
+                             [:div
+                              title
+                              " "
+                              [:a
+                               {:on-click (fn []
+                                            (let [s (create-tile-state make title)
+                                                  ndx (:tile-ndx @s)]
+                                              (swap! s assoc :parent-tile-ndx (:tile-ndx @state))
+                                              (swap! state assoc-in [child-ndx :ndx] ndx)
+                                              (.setTimeout js/window
+                                                           #(select-tile ndx)
+                                                           0)))
+                                :style {:cursor "pointer"}}
+                               ">"]]))))
                [:dev]
                (range (count (:children @state)))))})]
     tile-state-atom))
@@ -211,22 +200,10 @@
    (map-tile-state-atom ifn (into [] (into (sorted-map) m)) [] false [:div] m))
   ([ifn index path p v m]
    (let [tile-state-atom
-         (atom {:child-tile-ndxes []
-                :content
+         (atom {:content
                 (fn [state]
                   (display-map ifn index path p v m))})]
      tile-state-atom)))
-
-(defn add-child-tile
-  [parent-tile-state-atom child-tile-state-atom]
-  (swap! child-tile-state-atom assoc :parent-tile-ndx (:tile-ndx @parent-tile-state-atom))
-  (swap! parent-tile-state-atom
-         (fn [d]
-           (assoc
-             d
-             :child-tile-ndxes
-             (conj (:child-tile-ndxes d)
-                   (:tile-ndx @child-tile-state-atom))))))
 
 (defn display-tiles
   []

@@ -54,19 +54,9 @@
 
 (defn calling-component
   []
-    #_(tile/add-child-tile l1 m1)
-    #_(tile/add-child-tile l1 m2)
-    #_(tile/add-child-tile l1 l2)
-    #_(tile/add-child-tile l1 b1)
-    #_(tile/add-child-tile l2 b2)
   (tile/create-tile-state
     make-l1
     "Basic tile example")
-    ;(swap! b1 assoc :parent-tile-ndx (:tile-ndx @l1))
-    ;(swap! m1 assoc :parent-tile-ndx (:tile-ndx @l1))
-    ;(swap! m2 assoc :parent-tile-ndx (:tile-ndx @l1))
-    ;(swap! l2 assoc :parent-tile-ndx (:tile-ndx @l1))
-    ;(swap! b2 assoc :parent-tile-ndx (:tile-ndx @l2)))
   (fn []
       [tile/display-tiles]))
 
