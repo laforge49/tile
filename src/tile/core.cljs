@@ -119,7 +119,7 @@
                                             (let [s (create-tile-state make title)
                                                   ndx (:tile-ndx @s)]
                                               (swap! s assoc :parent-tile-ndx (:tile-ndx @state))
-                                              (swap! state assoc-in [child-ndx :ndx] ndx)
+                                              (swap! state assoc-in [:children child-ndx :ndx] ndx)
                                               (.setTimeout js/window
                                                            #(select-tile ndx)
                                                            0)))
