@@ -10,26 +10,47 @@
   (.scrollIntoView (.getElementById js/document (str "tile" tile-ndx))))
 
 (defn close-tile
-  [tile-ndx]
-  (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
-        children (:children @tile-state-atom)
-        children (if (some? children)
-                   children
-                   [])]
-    (if (and
-          (> tile-ndx 0)
-          (:display @tile-state-atom))
-      (do
-        (reduce
-          (fn [o child]
-            (let [ndx (:ndx child)]
-              (if (> ndx -1)
-                (close-tile ndx))))
-          nil
-          children)
-        (swap! tile-state-atom assoc :display false)
-        (if (= tile-ndx @selected-tile-ndx-atom)
-          (select-tile (:parent-tile-ndx @tile-state-atom)))))))
+  ([tile-ndx]
+   (close-tile tile-ndx true))
+  ([tile-ndx root]
+   (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
+         children (:children @tile-state-atom)
+         children (if (some? children)
+                    children
+                    [])
+         parent-tile-ndx (:parent-tile-ndx @tile-state-atom)
+         parent-state-atom (if (> tile-ndx 0)
+                             (nth @all-tile-states-atom parent-tile-ndx)
+                             nil)]
+     (if (and
+           (> tile-ndx 0)
+           (:display @tile-state-atom))
+       (do
+         (reduce
+           (fn [o child-ndx]
+             (let [child (nth children child-ndx)
+                   ndx (:ndx child)]
+               (when (> ndx -1)
+                 (swap! tile-state-atom assoc-in [:children child-ndx :ndx] -1)
+                 (close-tile ndx false))))
+           nil
+           (range (count children)))
+         (swap! tile-state-atom assoc :display false)
+         (if (= tile-ndx @selected-tile-ndx-atom)
+           (select-tile parent-tile-ndx))
+         (when root
+           (let [children (:children @parent-state-atom)
+                 child-ndx (reduce
+                             (fn [cn child-ndx]
+                               (if (> cn -1)
+                                 cn
+                                 (let [child (nth children child-ndx)]
+                                   (if (= tile-ndx (:ndx child))
+                                     child-ndx
+                                     -1))))
+                             -1
+                             (range (count children)))]
+             (swap! parent-state-atom assoc-in [:children child-ndx :ndx] -1))))))))
 
 (defn tile
   [state]
