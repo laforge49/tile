@@ -42,15 +42,15 @@
 (defn make-l2
   []
   (tile/list-tile-state-atom
-    [{:make make-b2 :title "Test2"}]))
+    [{:make make-b2 :title "Test2" :ndx -1}]))
 
 (defn make-l1
   []
   (tile/list-tile-state-atom
-    [{:make make-b1 :title "Test"}
-     {:make make-m1 :title "Basic map"}
-     {:make make-m2 :title "Map2"}
-     {:make make-l2 :title "Sub-list"}]))
+    [{:make make-b1 :title "Test" :ndx -1}
+     {:make make-m1 :title "Basic map" :ndx -1}
+     {:make make-m2 :title "Map2" :ndx -1}
+     {:make make-l2 :title "Sub-list" :ndx -1}]))
 
 (defn calling-component
   []

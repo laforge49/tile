@@ -89,33 +89,39 @@
   (let [tile-state-atom
         (atom
           {:child-tile-ndxes []
+           :children children
            :display false
            :content
            (fn [state]
              (reduce
-               (fn [v ndx]
-                 (let [s (nth @all-tile-states-atom ndx)]
-                   (conj v [:div
-                            [:input {:type "checkbox"
-                                     :checked (true? (:display @s))
-                                     :on-change
-                                     (fn []
-                                       (if (true? (:display @s))
-                                         (close-tile ndx)
-                                         (do
-                                           (swap! s assoc :display true)
-                                           (.setTimeout js/window
-                                                        #(select-tile ndx)
-                                                        0)
-                                           )))}]
-                            (if (true? (:display @s))
-                              [:a
-                               {:on-click #(select-tile ndx)
-                                :style {:cursor "pointer"}}
-                               (:title @s)]
-                              (:title @s))])))
+               (fn [v child]
+                 (let [make (:make child)
+                       title (:title child)
+                       ndx (:ndx child)
+                       s (if (> ndx -1)
+                           (nth @all-tile-states-atom ndx)
+                           nil)]
+                   (conj v #_[:input {:type "checkbox"
+                                      :checked (true? (:display @s))
+                                      :on-change
+                                      (fn []
+                                        (if (true? (:display @s))
+                                          (close-tile ndx)
+                                          (do
+                                            (swap! s assoc :display true)
+                                            (.setTimeout js/window
+                                                         #(select-tile ndx)
+                                                         0)
+                                            )))}]
+                         (if (some? s)
+                           [:div
+                            [:a
+                             {:on-click #(select-tile ndx)
+                              :style {:cursor "pointer"}}
+                             title]]
+                           [:div title]))))
                [:dev]
-               (:child-tile-ndxes @state)))})]
+               (:children @state)))})]
     tile-state-atom))
 
 (declare display-map map-tile-state-atom)
@@ -147,7 +153,7 @@
         [:div
          (str k " ")
          [:a
-          {:style    {:cursor "pointer" :color "blue"}
+          {:style {:cursor "pointer" :color "blue"}
            :on-click (fn []
                        (reset! plus-atm false)
                        (reset! star-atm false))}
@@ -159,12 +165,12 @@
          "}"]
         [:div (str k " ")
          [:a
-          {:style    {:cursor "pointer" :color "blue"}
+          {:style {:cursor "pointer" :color "blue"}
            :on-click (fn []
                        (reset! plus-atm true))}
           [:strong "+"]]
          [:a
-          {:style    {:cursor "pointer" :color "blue"}
+          {:style {:cursor "pointer" :color "blue"}
            :on-click (fn []
                        (reset! plus-atm true)
                        (reset! star-atm true))}
@@ -173,27 +179,27 @@
 
 (defn display-map
   [ifn order path p v m]
-   (reduce
-     (fn [v e]
-       (let [ke (first e)
-             value (second e)
-             path (conj path ke)]
-         (if (map? value)
-           (conj v [sub-display ifn path p ke value])
-           (conj v [:div (str ke " = " (pr-str value))]))))
-     v
-     order))
+  (reduce
+    (fn [v e]
+      (let [ke (first e)
+            value (second e)
+            path (conj path ke)]
+        (if (map? value)
+          (conj v [sub-display ifn path p ke value])
+          (conj v [:div (str ke " = " (pr-str value))]))))
+    v
+    order))
 
 (defn map-tile-state-atom
   ([ifn m]
    (map-tile-state-atom ifn (into [] (into (sorted-map) m)) [] false [:div] m))
   ([ifn index path p v m]
-  (let [tile-state-atom
-        (atom {:child-tile-ndxes []
-               :content
-               (fn [state]
-                 (display-map ifn index path p v m))})]
-    tile-state-atom)))
+   (let [tile-state-atom
+         (atom {:child-tile-ndxes []
+                :content
+                (fn [state]
+                  (display-map ifn index path p v m))})]
+     tile-state-atom)))
 
 (defn add-child-tile
   [parent-tile-state-atom child-tile-state-atom]
