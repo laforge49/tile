@@ -12,16 +12,21 @@
 (defn close-tile
   [tile-ndx]
   (let [tile-state-atom (nth @all-tile-states-atom tile-ndx)
-        child-tile-ndxes (:child-tile-ndxes @tile-state-atom)]
+        children (:children @tile-state-atom)
+        children (if (some? children)
+                   children
+                   [])]
     (if (and
           (> tile-ndx 0)
           (:display @tile-state-atom))
       (do
         (reduce
-          (fn [o ndx]
-            (close-tile ndx))
+          (fn [o child]
+            (let [ndx (:ndx child)]
+              (if (> ndx -1)
+                (close-tile ndx))))
           nil
-          child-tile-ndxes)
+          children)
         (swap! tile-state-atom assoc :display false)
         (if (= tile-ndx @selected-tile-ndx-atom)
           (select-tile (:parent-tile-ndx @tile-state-atom)))))))
