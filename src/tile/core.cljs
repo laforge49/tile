@@ -94,8 +94,9 @@
            :content
            (fn [state]
              (reduce
-               (fn [v child]
-                 (let [make (:make child)
+               (fn [v child-ndx]
+                 (let [child (nth (:children @state) child-ndx)
+                       make (:make child)
                        title (:title child)
                        ndx (:ndx child)
                        s (if (> ndx -1)
@@ -118,10 +119,25 @@
                             [:a
                              {:on-click #(select-tile ndx)
                               :style {:cursor "pointer"}}
-                             title]]
-                           [:div title]))))
+                             title]
+                            " "
+                            "<"]
+                           [:div
+                            title
+                            " "
+                            [:a
+                             {:on-click (fn []
+                                          (let [s (create-tile-state make title)
+                                                ndx (:tile-ndx @s)]
+                                            (swap! s assoc :parent-tile-ndx (:tile-ndx @state))
+                                            (swap! state assoc-in [child-ndx :ndx] ndx)
+                                            (.setTimeout js/window
+                                                         #(select-tile ndx)
+                                                         0)))
+                              :style {:cursor "pointer"}}
+                             ">"]]))))
                [:dev]
-               (:children @state)))})]
+               (range (count (:children @state)))))})]
     tile-state-atom))
 
 (declare display-map map-tile-state-atom)
