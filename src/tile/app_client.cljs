@@ -58,7 +58,7 @@
     make-l1
     "Basic tile example")
   (fn []
-      [tile/display-tiles]))
+    [tile/display-tiles]))
 
 (defn start!
   []
