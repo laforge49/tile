@@ -25,10 +25,10 @@
      (reduce
        (fn [o child-ndx]
          (let [child (nth children child-ndx)
-               ndx (:ndx child)]
-           (when (> ndx -1)
-             (swap! tile-state-atom assoc-in [:children child-ndx :ndx] -1)
-             (close-tile ndx false)
+               ndx-atom (:ndx-atom child)]
+           (when (> @ndx-atom -1)
+             (reset! ndx-atom -1)
+             (close-tile @ndx-atom false)
              )))
        nil
        (range (count children)))
@@ -37,17 +37,17 @@
        (select-tile parent-tile-ndx))
      (if root
        (let [children (:children @parent-state-atom)
-             child-ndx (reduce
-                         (fn [cn child-ndx]
-                           (if (> cn -1)
-                             cn
+             ndx-atom (reduce
+                         (fn [ndx-atom child-ndx]
+                           (if (some? ndx-atom)
+                             ndx-atom
                              (let [child (nth children child-ndx)]
-                               (if (= tile-ndx (:ndx child))
-                                 child-ndx
-                                 -1))))
-                         -1
+                               (if (= tile-ndx @(:ndx-atom child))
+                                 (:ndx-atom child)
+                                 nil))))
+                         nil
                          (range (count children)))]
-         (swap! parent-state-atom assoc-in [:children child-ndx :ndx] -1))))))
+         (reset! ndx-atom -1))))))
 
 (defn tile
   [state-atom]
@@ -140,7 +140,8 @@
          (let [child (nth (:children @state-atom) child-ndx)
                make (:make child)
                title (:title child)
-               ndx (:ndx child)
+               ndx-atom (:ndx-atom child)
+               ndx @ndx-atom
                s (if (> ndx -1)
                    (nth @all-tile-states-atom ndx)
                    nil)]
@@ -161,11 +162,11 @@
                       [:a
                        {:on-click (fn []
                                     (let [sa (create-tile-state-atom make title)
-                                          ndx (:tile-ndx @sa)]
+                                          tile-ndx (:tile-ndx @sa)]
                                       (swap! sa assoc :parent-tile-ndx (:tile-ndx @state-atom))
-                                      (swap! state-atom assoc-in [:children child-ndx :ndx] ndx)
+                                      (reset! ndx-atom tile-ndx)
                                       (.setTimeout js/window
-                                                   #(select-tile ndx)
+                                                   #(select-tile tile-ndx)
                                                    0)))
                         :style {:cursor "pointer"}}
                        ">"]]))))
