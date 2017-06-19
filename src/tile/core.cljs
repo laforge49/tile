@@ -51,12 +51,12 @@
 
 (defn tile
   [state-atom]
-  (let [{:keys [parent-tile-ndx child-tile-ndxes display title content tile-ndx]} @state-atom]
-    [:div {:id (str "tile" tile-ndx)}
+  (let [{:keys [parent-tile-ndx child-tile-ndxes display title content tile-ndx-atom]} @state-atom]
+    [:div {:id (str "tile" @tile-ndx-atom)}
      (if (not display)
        nil
        [:table
-        {:style {:border (if (= @selected-tile-ndx-atom tile-ndx)
+        {:style {:border (if (= @selected-tile-ndx-atom @tile-ndx-atom)
                            "5px solid blue"
                            "5px solid lime")
                  ;:float "left"
@@ -69,23 +69,23 @@
             [:div
              {:style {:float "left"
                       :padding "5px"}}
-             (if (> tile-ndx 0)
+             (if (> @tile-ndx-atom 0)
                [:a
                 {:on-click #(select-tile parent-tile-ndx)
                  :style {:cursor "pointer"}}
                 [:strong "^"]])
              " "
              [:a
-              {:on-click #(select-tile tile-ndx)
+              {:on-click #(select-tile @tile-ndx-atom)
                :style {:cursor "pointer"}}
               [:strong (str title " ")]]]
-            (if (> tile-ndx 0)
+            (if (> @tile-ndx-atom 0)
               [:div
                {:style {:float "right"}}
-               [:input {:disabled (= tile-ndx 0)
+               [:input {:disabled (= @tile-ndx-atom 0)
                         :type "button"
                         :value "X"
-                        :on-click #(close-tile tile-ndx)}]])]]]
+                        :on-click #(close-tile @tile-ndx-atom)}]])]]]
          [:tr
           {:style {:background-color "Cornsilk"}}
           [:td
@@ -111,9 +111,12 @@
   (let [ndx (locate-undisplayed)]
     (if (= ndx -1)
       (let [tile-state-atom (atom tile-state)]
-        (swap! tile-state-atom assoc :tile-ndx (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1))
+        (swap! tile-state-atom
+               assoc
+               :tile-ndx-atom
+               (atom (- (count (swap! all-tile-states-atom conj tile-state-atom)) 1)))
         tile-state-atom)
-      (let [tile-state (assoc tile-state :tile-ndx ndx)
+      (let [tile-state (assoc tile-state :tile-ndx-atom (atom ndx))
             tile-state-atom (nth @all-tile-states-atom ndx)]
         (reset! tile-state-atom tile-state)
         tile-state-atom))))
@@ -161,8 +164,8 @@
                       [:a
                        {:on-click (fn []
                                     (let [sa (create-tile-state-atom make title)
-                                          ndx (:tile-ndx @sa)]
-                                      (swap! sa assoc :parent-tile-ndx (:tile-ndx @state-atom))
+                                          ndx @(:tile-ndx-atom @sa)]
+                                      (swap! sa assoc :parent-tile-ndx @(:tile-ndx-atom @state-atom))
                                       (swap! state-atom assoc-in [:children child-ndx :ndx] ndx)
                                       (.setTimeout js/window
                                                    #(select-tile ndx)
