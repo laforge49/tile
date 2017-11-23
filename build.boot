@@ -3,7 +3,7 @@
  :resource-paths #{"resources"}
  :dependencies '[
                  [org.clojure/clojure                       "1.9.0-alpha14"  :scope "provided"]
-                 [org.clojure/core.async                    "0.2.395"]
+                 [org.clojure/core.async                    "0.3.442"]
                  [org.clojure/clojurescript "1.9.473"]
                  [adzerk/boot-cljs      "2.0.0" :scope "test"]
                  [adzerk/boot-reload    "0.5.1"      :scope "test"]
@@ -19,7 +19,7 @@
                  [ring/ring-defaults        "0.3.0"] ; Includes `ring-anti-forgery`, etc.
 
                  [compojure                 "1.6.0"] ; Or routing lib of your choice
-                 [reagent "0.6.0"]
+                 [reagent "0.7.0"]
 
    ;;; Transit deps optional; may be used to aid perf. of larger data payloads
    ;;; (see reference example for details):
