@@ -2,14 +2,14 @@
  :source-paths   #{"src"}
  :resource-paths #{"resources"}
  :dependencies '[
-                 [org.clojure/clojure                       "1.9.0-alpha14"  :scope "provided"]
-                 [org.clojure/core.async                    "0.3.442"]
-                 [org.clojure/clojurescript "1.9.473"]
-                 [adzerk/boot-cljs      "2.0.0" :scope "test"]
-                 [adzerk/boot-reload    "0.5.1"      :scope "test"]
-                 [org.clojure/tools.nrepl "0.2.12"]
-                 [com.taoensso/sente        "1.11.0"] ; <--- Sente
-                 [com.taoensso/timbre       "4.7.4"]
+                 [org.clojure/clojure        "1.9.0-alpha14"  :scope "provided"]
+                 [org.clojure/core.async     "0.3.442"]
+                 [org.clojure/clojurescript  "1.9.473"]
+                 [adzerk/boot-cljs           "2.0.0" :scope "test"]
+                 [adzerk/boot-reload         "0.5.1"      :scope "test"]
+                 [org.clojure/tools.nrepl    "0.2.12"]
+                 [com.taoensso/sente         "1.11.0"] ; <--- Sente
+                 [com.taoensso/timbre        "4.7.4"]
 
    ;;; ---> Choose (uncomment) a supported web server <---
                  [http-kit                  "2.2.0"]
